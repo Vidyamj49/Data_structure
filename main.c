@@ -1,75 +1,118 @@
-#include"hash.h" 
+#include "inverted_index.h"
 
-int main()
+int main(const int argc, char *argv[])
 {
-	int size, data, choice, index;
-	char opt;
-	printf("Enter the size of arr: ");
-	scanf("%d", &size);
-	hash_t arr[size];
-	create_HT(arr, size);
-	
-	printf("1. Insert data in HT\n2. Search data in HT\n3. Delete data from HT\n4. Destroy HT\n5. Display HT\n6. Exit\nEnter you choice : ");
-	while(1)
-	{
-		scanf("%d", &choice);
-		switch(choice)
-		{
-			case 1:
-				printf("Enter the data: ");
-				scanf("%d", &data);
-				if(insert_HT(arr, data, size) == FAILURE)
-				{
-					printf("INFO : Insert data is Failure\n");
-				}
-				
-				break;
+    // Check if command line arguments are provided
+    if (argc < 2)
+    {
+        printf("Error: Please pass the command line argument\n");
+        return 0;
+    }
 
-			case 2:
-				printf("Enter the data: ");
-				scanf("%d", &data);
-				if((search_HT(arr, data, size)) == DATA_NOT_FOUND)
-				{
-					printf("INFO : Data not found\n");
-				}
-				else
-				{
-					printf("INFO : %d is found at the index %d\n", data, data % size);
-				}
-				break;
+    file_node_t *file_head = NULL; // Structure pointer
 
-			case 3:
-				printf("Enter the data: ");
-				scanf("%d", &data);
-				if(delete_element(arr, data, size) == DATA_NOT_FOUND)
-				{
-					printf("INFO : Data is not found\n");
-				}
-				else
-				{
-					printf("INFO : %d is deleted successfully\n",data);
-				}
-				break;
+    // Validate and store filenames in a linked list
+    if (validate_n_store_filenames(argc, argv, &file_head) == FAILURE)
+    {
+        printf("Error: File Validation Failed\n");
+        return 0;
+    }
 
-			case 4:
-				if(destroy_HT(arr,size) == SUCCESS)
-				{
-					printf("INFO: Hashtable deleted successfully\n");
-				}
-				else
-				{
-					printf("INFO: Delete hashtable is Failure\n");
-				}
-				break;
+    // Create hash table
+    main_node_t **main_head = (main_node_t **)malloc(27 * sizeof(main_node_t *));
+    for (int i = 0; i < 27; i++)
+    {
+        main_head[i] = NULL;
+    }
+    printf("Hash table is created\n");
 
-			case 5:
-				display_HT(arr, size);
-				break;
-			case 6:
-				return SUCCESS;
+    int option;
+    printf("Select your choice among the following options:\n");
+    printf("1. Create Database\n2. Display Database\n3. Search Database\n4. Save database\n5. Update Database\n6. Exit\n");
 
-			default:
-				printf("Invalid input\n");
-		}
-	}
+    char ch = 'y';
+    do
+    {
+        printf("Choose option: ");
+        scanf("%d", &option);
+        getchar(); // Consume newline character
+
+        switch (option)
+        {
+        case 1:
+            // Create Database
+            if (create_DB(main_head, file_head) == FAILURE)
+            {
+                printf("Failed to create database\n");
+            }
+            else
+            {
+                printf("Database created successfully\n");
+            }
+            break;
+
+        case 2:
+            // Display Database
+            if (display_DB(main_head) == FAILURE)
+            {
+                printf("Database is empty\n");
+            }
+            else
+            {
+                printf("Database displayed successfully\n");
+            }
+            break;
+
+        case 3:
+            // Search Database
+            char word[50];
+            printf("Enter the word you want to search: ");
+            scanf("%s", word);
+            getchar(); // Consume newline character
+            if (search_DB(main_head, word) == FAILURE)
+            {
+                printf("The word entered was not found\n");
+            }
+            break;
+
+        case 4:
+            // Save Database
+            char f_name[20];
+            printf("Enter the file name: ");
+            scanf("%s", f_name);
+            getchar(); // Consume newline character
+            save_DB(main_head, f_name);
+            printf("Database saved successfully\n");
+            break;
+
+        case 5:
+            // Update Database
+            char saved_fname[20];
+            printf("Enter the saved file name: ");
+            scanf("%s", saved_fname);
+            getchar(); // Consume newline character
+            if (update_DB(&file_head, main_head, saved_fname) == FAILURE)
+            {
+                printf("Failed to update database\n");
+            }
+            else
+            {
+                printf("Database updated successfully\n");
+            }
+            break;
+
+        default:
+            printf("Choose a correct option\n");
+        }
+
+        printf("Do you want to continue?\n");
+        printf("y/Y to continue and n/N to discontinue\n");
+        scanf("%c", &ch);
+        getchar(); // Consume newline character
+    } while (ch == 'y' || ch == 'Y');
+
+    return 0;
 }
+
+
+
